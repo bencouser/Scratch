@@ -89,6 +89,17 @@ void render_window(SDL_Renderer *renderer, int x_pos, int y_pos,
   SDL_RenderPresent(renderer);
 }
 
+void calculateFPS(Uint32 *startTime, int *frameCount) {
+  (*frameCount)++;
+  if (*frameCount == 60) {
+    Uint32 timeElapsed = SDL_GetTicks() - *startTime;
+    float fps = *frameCount / (timeElapsed / 1000.0f);
+    printf("FPS: %.2f\n", fps);
+    *frameCount = 0;
+    *startTime = SDL_GetTicks();
+  }
+}
+
 void cleanUp(SDL_Texture *texture, SDL_Renderer *renderer, SDL_Window *win) {
   // Cleanup
   SDL_DestroyTexture(texture);
@@ -209,16 +220,7 @@ int main(int argc, char *argv[]) {
     }
 
     render_window(renderer, x_pos, y_pos, texture);
-
-    // Calculate and print FPS every 60 frames
-    frameCount++;
-    if (frameCount == 60) {
-      Uint32 timeElapsed = SDL_GetTicks() - startTime;
-      float fps = frameCount / (timeElapsed / 1000.0f);
-      printf("FPS: %.2f\n", fps);
-      frameCount = 0;
-      startTime = SDL_GetTicks();
-    }
+    calculateFPS(&startTime, &frameCount);
   }
 
   cleanUp(texture, renderer, win);
