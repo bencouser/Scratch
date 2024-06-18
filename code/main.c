@@ -1,13 +1,14 @@
+#include "SDL_timer.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_render.h>
 #include <stdio.h>
 
-// Screen dimension constants
+// Screen dimensions
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-// Image dimension constants
+// Image dimensions
 const int IMAGE_WIDTH = 100;
 const int IMAGE_HEIGHT = 100;
 
@@ -25,7 +26,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Create Window
-  SDL_Window *win = SDL_CreateWindow("Hello, Window!", SDL_WINDOWPOS_CENTERED,
+  SDL_Window *win = SDL_CreateWindow("Scratch", SDL_WINDOWPOS_CENTERED,
                                      SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,
                                      SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 
@@ -75,11 +76,14 @@ int main(int argc, char *argv[]) {
   float y_pos = (SCREEN_HEIGHT - IMAGE_HEIGHT) / 2;
   float x_vel = 5; // pixels per frame
 
+  Uint32 startTime = SDL_GetTicks();
+
   // Main loop flag
   int running = 1;
 
   // Event handler
   SDL_Event e;
+
   // While application is running
   while (running) {
     // Handle events on queue
@@ -102,9 +106,16 @@ int main(int argc, char *argv[]) {
 
     // Define the destination rectangle for rendering the image
     SDL_Rect destRect = {(int)x_pos, (int)y_pos, IMAGE_WIDTH, IMAGE_HEIGHT};
+    //
+    // Define the destination rectangle for rendering the image
+    SDL_Rect destRect2 = {(int)x_pos - 100, (int)y_pos - 200, IMAGE_WIDTH,
+                          IMAGE_HEIGHT};
 
     // Render texture to screen
     SDL_RenderCopy(renderer, texture, NULL, &destRect);
+
+    // Render texture to screen
+    SDL_RenderCopy(renderer, texture, NULL, &destRect2);
 
     // Update screen
     SDL_RenderPresent(renderer);

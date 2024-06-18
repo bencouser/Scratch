@@ -10,9 +10,7 @@ mkdir -p ../build
 echo "Building..."
 pushd ../build || exit
 
-echo 'These are the flags'
-echo $FLAGS
-echo 'now time to compile'
+echo 'Compiling...'
 clang -o Scratch ../code/main.c -I/opt/homebrew/include/SDL2 -L/opt/homebrew/lib -lSDL2 -lSDL2_image
 if [[ $? -ne 0 ]]; then
     echo "Compilation failed."
