@@ -1,4 +1,3 @@
-#include "SDL_timer.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_render.h>
@@ -11,6 +10,9 @@ const int SCREEN_HEIGHT = 600;
 // Image dimensions
 const int IMAGE_WIDTH = 100;
 const int IMAGE_HEIGHT = 100;
+
+// Velocity in pixels per second
+const float VELOCITY = 300.0f;
 
 int main(int argc, char *argv[]) {
   // Initialize
@@ -71,18 +73,26 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  // Image position and velocity
-  float x_pos = 0;
-  float y_pos = (SCREEN_HEIGHT - IMAGE_HEIGHT) / 2;
-  float x_vel = 5; // pixels per frame
+  // Image position
+  float x_pos = 69;
+  float y_pos = 69;
 
+  // Get the starting time
   Uint32 startTime = SDL_GetTicks();
+  Uint32 lastTime = startTime;
+  int frameCount = 0;
 
   // Main loop flag
   int running = 1;
 
   // Event handler
   SDL_Event e;
+
+  // Movement flags
+  int move_up = 0;
+  int move_down = 0;
+  int move_left = 0;
+  int move_right = 0;
 
   // While application is running
   while (running) {
@@ -91,13 +101,67 @@ int main(int argc, char *argv[]) {
       // User requests quit
       if (e.type == SDL_QUIT) {
         running = 0;
+      } else if (e.type == SDL_KEYDOWN) {
+        // User input Movement
+        switch (e.key.keysym.sym) {
+        case SDLK_UP:
+          move_up = 1;
+          break;
+        case SDLK_DOWN:
+          move_down = 1;
+          break;
+        case SDLK_LEFT:
+          move_left = 1;
+          break;
+        case SDLK_RIGHT:
+          move_right = 1;
+          break;
+        }
+      } else if (e.type == SDL_KEYUP) {
+        switch (e.key.keysym.sym) {
+        case SDLK_UP:
+          move_up = 0;
+          break;
+        case SDLK_DOWN:
+          move_down = 0;
+          break;
+        case SDLK_LEFT:
+          move_left = 0;
+          break;
+        case SDLK_RIGHT:
+          move_right = 0;
+          break;
+        }
       }
     }
 
-    // Update position
-    x_pos += x_vel;
-    if (x_pos > SCREEN_WIDTH) {
-      x_pos = -IMAGE_WIDTH; // Reset position to start from left again
+    // Calculate elapsed time in seconds
+    Uint32 currentTime = SDL_GetTicks();
+    float elapsedTime = (currentTime - lastTime) / 1000.0f;
+    lastTime = currentTime;
+
+    // Update position based on movement flags
+    if (move_up) {
+      y_pos -= VELOCITY * elapsedTime;
+      if (y_pos < 0)
+        y_pos = 0;
+    }
+    if (move_down) {
+      y_pos += VELOCITY * elapsedTime;
+      // Bounds
+      if (y_pos > SCREEN_HEIGHT - IMAGE_HEIGHT)
+        y_pos = SCREEN_HEIGHT - IMAGE_HEIGHT;
+    }
+    if (move_left) {
+      x_pos -= VELOCITY * elapsedTime;
+      if (x_pos < 0)
+        x_pos = 0;
+    }
+    if (move_right) {
+      x_pos += VELOCITY * elapsedTime;
+      // Bounds
+      if (x_pos > SCREEN_WIDTH - IMAGE_WIDTH)
+        x_pos = SCREEN_WIDTH - IMAGE_WIDTH;
     }
 
     // Clear screen
@@ -106,19 +170,22 @@ int main(int argc, char *argv[]) {
 
     // Define the destination rectangle for rendering the image
     SDL_Rect destRect = {(int)x_pos, (int)y_pos, IMAGE_WIDTH, IMAGE_HEIGHT};
-    //
-    // Define the destination rectangle for rendering the image
-    SDL_Rect destRect2 = {(int)x_pos - 100, (int)y_pos - 200, IMAGE_WIDTH,
-                          IMAGE_HEIGHT};
 
     // Render texture to screen
     SDL_RenderCopy(renderer, texture, NULL, &destRect);
 
-    // Render texture to screen
-    SDL_RenderCopy(renderer, texture, NULL, &destRect2);
-
     // Update screen
     SDL_RenderPresent(renderer);
+
+    // Calculate and print FPS every 60 frames
+    frameCount++;
+    if (frameCount == 60) {
+      Uint32 timeElapsed = SDL_GetTicks() - startTime;
+      float fps = frameCount / (timeElapsed / 1000.0f);
+      printf("FPS: %.2f\n", fps);
+      frameCount = 0;
+      startTime = SDL_GetTicks();
+    }
   }
 
   // Cleanup

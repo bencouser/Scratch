@@ -1,0 +1,8 @@
+> Get user input to determine movement of texture
+> Find out how to break things into cells (pokemon style)
+> ^ How will movement work in a system like this?
+> How on earth do I break this project into parts
+> Collisions
+> What do I want to do with this game?
+    - 2D Pokemon style game (no serious physics)
+    - Fantasy game with spells (only combat form?)
