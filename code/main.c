@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_render.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 // Screen dimensions
@@ -14,51 +15,51 @@ const int IMAGE_HEIGHT = 100;
 // Velocity in pixels per second
 const float VELOCITY = 300.0f;
 
-int main(int argc, char *argv[]) {
-  // Initialize
+bool initialize(SDL_Window **win, SDL_Renderer **renderer) {
+  // Initialize SDL
   if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) {
     printf("SDL_Init Error: %s\n", SDL_GetError());
-    return 1;
+    return false;
   }
 
+  // Initialize SDL_image
   if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
     printf("IMG_Init Error: %s\n", IMG_GetError());
     SDL_Quit();
-    return 1;
+    return false;
   }
 
-  // Create Window
-  SDL_Window *win = SDL_CreateWindow("Scratch", SDL_WINDOWPOS_CENTERED,
-                                     SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,
-                                     SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-
-  // Catch Window Error
-  if (win == NULL) {
+  // Create window
+  *win = SDL_CreateWindow("Scratch", SDL_WINDOWPOS_CENTERED,
+                          SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT,
+                          SDL_WINDOW_SHOWN);
+  if (*win == NULL) {
     printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
     IMG_Quit();
     SDL_Quit();
-    return 1;
+    return false;
   }
 
-  SDL_Renderer *renderer = SDL_CreateRenderer(
-      win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-  if (renderer == NULL) {
-    SDL_DestroyWindow(win);
+  // Create renderer
+  *renderer = SDL_CreateRenderer(
+      *win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  if (*renderer == NULL) {
+    SDL_DestroyWindow(*win);
     printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
     IMG_Quit();
     SDL_Quit();
-    return 1;
+    return false;
   }
 
+  return true;
+}
+
+SDL_Texture *loadTexture(const char *filePath, SDL_Renderer *renderer) {
   // Load the image
-  SDL_Surface *image = IMG_Load("../data/box.png");
+  SDL_Surface *image = IMG_Load(filePath);
   if (image == NULL) {
     printf("IMG_Load Error: %s\n", IMG_GetError());
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(win);
-    IMG_Quit();
-    SDL_Quit();
-    return 1;
+    return NULL;
   }
 
   // Create a texture from the surface
@@ -66,6 +67,49 @@ int main(int argc, char *argv[]) {
   SDL_FreeSurface(image);
   if (texture == NULL) {
     printf("SDL_CreateTextureFromSurface Error: %s\n", SDL_GetError());
+    return NULL;
+  }
+
+  return texture;
+}
+
+void render_window(SDL_Renderer *renderer, int x_pos, int y_pos,
+                   SDL_Texture *texture) {
+  // Clear screen
+  SDL_SetRenderDrawColor(renderer, 0xFF, 0xC0, 0xCB, 0xFF);
+  SDL_RenderClear(renderer);
+
+  // Define the destination rectangle for rendering the image
+  SDL_Rect destRect = {(int)x_pos, (int)y_pos, IMAGE_WIDTH, IMAGE_HEIGHT};
+
+  // Render texture to screen
+  SDL_RenderCopy(renderer, texture, NULL, &destRect);
+
+  // Update screen
+  SDL_RenderPresent(renderer);
+}
+
+void cleanUp(SDL_Texture *texture, SDL_Renderer *renderer, SDL_Window *win) {
+  // Cleanup
+  SDL_DestroyTexture(texture);
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(win);
+  IMG_Quit();
+  SDL_Quit();
+}
+
+int main(int argc, char *argv[]) {
+  // SDL Init
+  SDL_Window *win = NULL;
+  SDL_Renderer *renderer = NULL;
+
+  if (!initialize(&win, &renderer)) {
+    return 1;
+  }
+
+  // Load texture
+  SDL_Texture *texture = loadTexture("../data/box.png", renderer);
+  if (texture == NULL) {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(win);
     IMG_Quit();
@@ -164,18 +208,7 @@ int main(int argc, char *argv[]) {
         x_pos = SCREEN_WIDTH - IMAGE_WIDTH;
     }
 
-    // Clear screen
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0xC0, 0xCB, 0xFF);
-    SDL_RenderClear(renderer);
-
-    // Define the destination rectangle for rendering the image
-    SDL_Rect destRect = {(int)x_pos, (int)y_pos, IMAGE_WIDTH, IMAGE_HEIGHT};
-
-    // Render texture to screen
-    SDL_RenderCopy(renderer, texture, NULL, &destRect);
-
-    // Update screen
-    SDL_RenderPresent(renderer);
+    render_window(renderer, x_pos, y_pos, texture);
 
     // Calculate and print FPS every 60 frames
     frameCount++;
@@ -188,12 +221,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // Cleanup
-  SDL_DestroyTexture(texture);
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(win);
-  IMG_Quit();
-  SDL_Quit();
-
+  cleanUp(texture, renderer, win);
   return 0;
 }
