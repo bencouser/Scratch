@@ -1,0 +1,3 @@
+compiler = clang++
+linker = ld
+debug = lldb
