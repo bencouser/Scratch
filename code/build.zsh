@@ -11,7 +11,7 @@ echo "Building..."
 pushd ../build || exit
 
 echo 'Compiling...'
-clang -o Scratch ../code/main.c -I/opt/homebrew/include/SDL2 -L/opt/homebrew/lib -lSDL2 -lSDL2_image
+clang -o MineSweeper ../code/minesweeper.c -I/opt/homebrew/include/SDL2 -L/opt/homebrew/lib -lSDL2 -lSDL2_image
 if [[ $? -ne 0 ]]; then
     echo "Compilation failed."
     popd
@@ -25,7 +25,7 @@ read -r user_input
 # Run script if user input is 'y'
 if [[ "$user_input" == "y" ]]; then
     echo "Running..."
-    ./scratch
+    ./MineSweeper
 else
     echo "Skipping run."
 fi

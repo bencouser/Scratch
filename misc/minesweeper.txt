@@ -1,0 +1,9 @@
+How to do minesweeper:
+
+> Get a grid of nxn squares
+    - To implement this have an nxn array of zeros
+    - place m number of bombs in the zeros
+        - add 1 to all neighbour cells
+        - use number in cell to determine what graphic should be rendered
+        - a bomb == 9
+        - 9 + 1 = 9
