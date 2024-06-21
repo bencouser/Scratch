@@ -5,15 +5,12 @@
 #include <stdio.h>
 
 // Screen dimensions
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
+const int SCREEN_WIDTH = 320;
+const int SCREEN_HEIGHT = 320;
 
 // Image dimensions
-const int IMAGE_WIDTH = 100;
-const int IMAGE_HEIGHT = 100;
-
-// Velocity in pixels per second
-const float VELOCITY = 300.0f;
+const int IMAGE_WIDTH = 32;
+const int IMAGE_HEIGHT = 32;
 
 bool initialize(SDL_Window **win, SDL_Renderer **renderer) {
   // Initialize SDL
@@ -119,7 +116,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Load texture
-  SDL_Texture *texture = loadTexture("../data/box.png", renderer);
+  SDL_Texture *texture =
+      loadTexture("../data/MineSweeper/images/Unclicked.png", renderer);
   if (texture == NULL) {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(win);
@@ -129,8 +127,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Image position
-  float x_pos = 69;
-  float y_pos = 69;
+  float x_pos = 0;
+  float y_pos = 0;
 
   // Get the starting time
   Uint32 startTime = SDL_GetTicks();
@@ -143,81 +141,17 @@ int main(int argc, char *argv[]) {
   // Event handler
   SDL_Event e;
 
-  // Movement flags
-  int move_up = 0;
-  int move_down = 0;
-  int move_left = 0;
-  int move_right = 0;
-
-  // While application is running
   while (running) {
-    // Handle events on queue
     while (SDL_PollEvent(&e) != 0) {
+      // Calculate elapsed time in seconds
       // User requests quit
       if (e.type == SDL_QUIT) {
         running = 0;
-      } else if (e.type == SDL_KEYDOWN) {
-        // User input Movement
-        switch (e.key.keysym.sym) {
-        case SDLK_UP:
-          move_up = 1;
-          break;
-        case SDLK_DOWN:
-          move_down = 1;
-          break;
-        case SDLK_LEFT:
-          move_left = 1;
-          break;
-        case SDLK_RIGHT:
-          move_right = 1;
-          break;
-        }
-      } else if (e.type == SDL_KEYUP) {
-        switch (e.key.keysym.sym) {
-        case SDLK_UP:
-          move_up = 0;
-          break;
-        case SDLK_DOWN:
-          move_down = 0;
-          break;
-        case SDLK_LEFT:
-          move_left = 0;
-          break;
-        case SDLK_RIGHT:
-          move_right = 0;
-          break;
-        }
       }
     }
-
-    // Calculate elapsed time in seconds
     Uint32 currentTime = SDL_GetTicks();
     float elapsedTime = (currentTime - lastTime) / 1000.0f;
     lastTime = currentTime;
-
-    // Update position based on movement flags
-    if (move_up) {
-      y_pos -= VELOCITY * elapsedTime;
-      if (y_pos < 0)
-        y_pos = 0;
-    }
-    if (move_down) {
-      y_pos += VELOCITY * elapsedTime;
-      // Bounds
-      if (y_pos > SCREEN_HEIGHT - IMAGE_HEIGHT)
-        y_pos = SCREEN_HEIGHT - IMAGE_HEIGHT;
-    }
-    if (move_left) {
-      x_pos -= VELOCITY * elapsedTime;
-      if (x_pos < 0)
-        x_pos = 0;
-    }
-    if (move_right) {
-      x_pos += VELOCITY * elapsedTime;
-      // Bounds
-      if (x_pos > SCREEN_WIDTH - IMAGE_WIDTH)
-        x_pos = SCREEN_WIDTH - IMAGE_WIDTH;
-    }
 
     render_window(renderer, x_pos, y_pos, texture);
     calculateFPS(&startTime, &frameCount);
