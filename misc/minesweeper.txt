@@ -7,3 +7,12 @@ How to do minesweeper:
         - use number in cell to determine what graphic should be rendered
         - a bomb == 9
         - 9 + 1 = 9
+
+> Can we get away with only rerendering the cells that is clicked/effected by the click?
+    - How to get position of click on window.
+    - Initialise screen by rendering each tile unclicked.
+    - Also run ./grid to initialise gameplay
+    - when cell is clicked
+        - Check if cell has already been clicked
+        - End game if it is a bomb
+        - Need to make an algorithm to work out which cells are revealed.

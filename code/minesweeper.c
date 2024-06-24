@@ -127,8 +127,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Image position
-  float x_pos = 0;
-  float y_pos = 0;
+  float x_origin = 0;
+  float y_origin = 0;
 
   // Get the starting time
   Uint32 startTime = SDL_GetTicks();
@@ -140,6 +140,7 @@ int main(int argc, char *argv[]) {
 
   // Event handler
   SDL_Event e;
+  int i;
 
   while (running) {
     while (SDL_PollEvent(&e) != 0) {
@@ -153,7 +154,12 @@ int main(int argc, char *argv[]) {
     float elapsedTime = (currentTime - lastTime) / 1000.0f;
     lastTime = currentTime;
 
-    render_window(renderer, x_pos, y_pos, texture);
+    // Move this to an initialise function and run for all cells
+    for (i = 0; i < 5; i++) {
+      int x_pos = x_origin + i * 32;
+      int y_pos = x_origin + i * 32;
+      render_window(renderer, x_pos, y_pos, texture);
+    }
     calculateFPS(&startTime, &frameCount);
   }
 
