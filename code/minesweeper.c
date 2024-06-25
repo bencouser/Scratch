@@ -70,19 +70,34 @@ SDL_Texture *loadTexture(const char *filePath, SDL_Renderer *renderer) {
   return texture;
 }
 
-void render_window(SDL_Renderer *renderer, int x_pos, int y_pos,
-                   SDL_Texture *texture) {
+void render_texture(SDL_Renderer *renderer, SDL_Texture *texture, int x,
+                    int y) {
+  SDL_Rect dstRect = {x, y, IMAGE_WIDTH, IMAGE_HEIGHT};
+  SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+}
+
+void render_window(SDL_Renderer *renderer) {
   // Clear screen
   SDL_SetRenderDrawColor(renderer, 0xFF, 0xC0, 0xCB, 0xFF);
   SDL_RenderClear(renderer);
 
-  // Define the destination rectangle for rendering the image
-  SDL_Rect destRect = {(int)x_pos, (int)y_pos, IMAGE_WIDTH, IMAGE_HEIGHT};
-
-  // Render texture to screen
-  SDL_RenderCopy(renderer, texture, NULL, &destRect);
-
   // Update screen
+  SDL_RenderPresent(renderer);
+}
+
+void initialise_game(SDL_Renderer *renderer, SDL_Texture *texture) {
+  int i;
+  int j;
+  int x_origin = 0;
+  int y_origin = 0;
+  for (i = 0; i < 10; i++) {
+    for (j = 0; j < 10; j++) {
+      int x_pos = x_origin + i * 32;
+      int y_pos = y_origin + j * 32;
+      render_texture(renderer, texture, x_pos, y_pos);
+    }
+  }
+  // Present the final rendered result
   SDL_RenderPresent(renderer);
 }
 
@@ -126,10 +141,6 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  // Image position
-  float x_origin = 0;
-  float y_origin = 0;
-
   // Get the starting time
   Uint32 startTime = SDL_GetTicks();
   Uint32 lastTime = startTime;
@@ -140,7 +151,9 @@ int main(int argc, char *argv[]) {
 
   // Event handler
   SDL_Event e;
-  int i;
+
+  // Initialise game
+  initialise_game(renderer, texture);
 
   while (running) {
     while (SDL_PollEvent(&e) != 0) {
@@ -150,16 +163,11 @@ int main(int argc, char *argv[]) {
         running = 0;
       }
     }
+
     Uint32 currentTime = SDL_GetTicks();
     float elapsedTime = (currentTime - lastTime) / 1000.0f;
     lastTime = currentTime;
 
-    // Move this to an initialise function and run for all cells
-    for (i = 0; i < 5; i++) {
-      int x_pos = x_origin + i * 32;
-      int y_pos = x_origin + i * 32;
-      render_window(renderer, x_pos, y_pos, texture);
-    }
     calculateFPS(&startTime, &frameCount);
   }
 
