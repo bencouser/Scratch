@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mouse.h>
 #include <SDL_render.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -8,18 +9,19 @@
 const int SCREEN_WIDTH = 320;
 const int SCREEN_HEIGHT = 320;
 
-// Image dimensions
+// Cell dimensions
 const int IMAGE_WIDTH = 32;
 const int IMAGE_HEIGHT = 32;
 
-bool initialize(SDL_Window **win, SDL_Renderer **renderer) {
-  // Initialize SDL
+// Initialisation of SDL, Renderer
+bool initialise(SDL_Window **win, SDL_Renderer **renderer) {
+  // Initialise SDL
   if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) {
     printf("SDL_Init Error: %s\n", SDL_GetError());
     return false;
   }
 
-  // Initialize SDL_image
+  // Initialise SDL_image
   if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
     printf("IMG_Init Error: %s\n", IMG_GetError());
     SDL_Quit();
@@ -51,6 +53,7 @@ bool initialize(SDL_Window **win, SDL_Renderer **renderer) {
   return true;
 }
 
+// Load image texture
 SDL_Texture *loadTexture(const char *filePath, SDL_Renderer *renderer) {
   // Load the image
   SDL_Surface *image = IMG_Load(filePath);
@@ -90,6 +93,7 @@ void initialise_game(SDL_Renderer *renderer, SDL_Texture *texture) {
   int j;
   int x_origin = 0;
   int y_origin = 0;
+  // Render each cell to be unclicked
   for (i = 0; i < 10; i++) {
     for (j = 0; j < 10; j++) {
       int x_pos = x_origin + i * 32;
@@ -98,6 +102,14 @@ void initialise_game(SDL_Renderer *renderer, SDL_Texture *texture) {
     }
   }
   // Present the final rendered result
+  SDL_RenderPresent(renderer);
+}
+
+void render_test_block(SDL_Renderer *renderer, int x, int y) {
+  // Add stage to fit to 32 x 32 cell later
+  SDL_Rect fillRect = {x, y, 32, 32};
+  SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+  SDL_RenderFillRect(renderer, &fillRect);
   SDL_RenderPresent(renderer);
 }
 
@@ -126,7 +138,7 @@ int main(int argc, char *argv[]) {
   SDL_Window *win = NULL;
   SDL_Renderer *renderer = NULL;
 
-  if (!initialize(&win, &renderer)) {
+  if (!initialise(&win, &renderer)) {
     return 1;
   }
 
@@ -161,6 +173,11 @@ int main(int argc, char *argv[]) {
       // User requests quit
       if (e.type == SDL_QUIT) {
         running = 0;
+      } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        printf("Mouse clicked at (%d, %d)\n", x, y);
+        render_test_block(renderer, x, y);
       }
     }
 
@@ -168,7 +185,7 @@ int main(int argc, char *argv[]) {
     float elapsedTime = (currentTime - lastTime) / 1000.0f;
     lastTime = currentTime;
 
-    calculateFPS(&startTime, &frameCount);
+    // calculateFPS(&startTime, &frameCount);
   }
 
   cleanUp(texture, renderer, win);
